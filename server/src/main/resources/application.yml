@@ -1,0 +1,59 @@
+server:
+    port: 8080
+
+spring:
+    application:
+        name: detailing-app-server
+    security:
+        oauth2:
+            client:
+                registration:
+                    cognito:
+                        client-id: 28121vcunaq037ij33mlc0dlc7
+                        client-secret: ${COGNITO_CLIENT_SECRET}
+                        scope:
+                            - phone
+                            - openid
+                            - email
+                        redirect-uri: http://localhost:8080/login/oauth2/code/cognito
+                provider:
+                    cognito:
+                        issuer-uri: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_5mMPC9Fsc
+                        user-name-attribute: username
+
+logging:
+    level:
+        com.detailing.service.GmailService: DEBUG
+        com.detailing.config.GmailConfig: DEBUG
+        root: INFO
+
+aws:
+    region: us-east-2
+
+stripe:
+    api:
+        key: ${STRIPE_SECRET_KEY}
+    webhook:
+        secret: ${STRIPE_WEBHOOK_SECRET}
+
+frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
+dynamodb:
+    table-name:
+        bookings: bookings
+
+cognito:
+    domain: https://us-east-25mmpc9fsc.auth.us-east-2.amazoncognito.com
+
+app:
+    jwt:
+        secret: ${JWT_SECRET}
+
+gmail:
+    client-id: ${GMAIL_CLIENT_ID}
+    client-secret: ${GMAIL_CLIENT_SECRET}
+    redirect-uri: ${GMAIL_REDIRECT_URI:http://localhost:8080/oauth2callback}
+    refresh-token: ${GMAIL_REFRESH_TOKEN:}
+    from-email: ${GMAIL_FROM_EMAIL}
+    from-name: ${GMAIL_FROM_NAME:Earned Shine Detailing}
