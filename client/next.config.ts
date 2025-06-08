@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
     env: {
@@ -12,7 +13,11 @@ const nextConfig: NextConfig = {
                 destination: `${process.env.BACKEND_URL || 'http://localhost:8080'}/api/bookings/:path*`
             }
         ];
-    }
+    },
+    webpack(config) {
+        config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+        return config;
+    },
 };
 
 export default nextConfig;
