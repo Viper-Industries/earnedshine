@@ -87,7 +87,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
     const handleLogin = async () => {
         try {
-            window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/oauth2/authorization/cognito`;
+            const backendUrl = process.env.BACKEND_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://earnedshine.com');
+            window.location.href = `${backendUrl}/oauth2/authorization/cognito`;
         } catch (err) {
             console.error('Error initiating login:', err);
             setError('Failed to initiate login');

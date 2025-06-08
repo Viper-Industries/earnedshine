@@ -15,7 +15,7 @@ spring:
                             - phone
                             - openid
                             - email
-                        redirect-uri: http://localhost:8080/login/oauth2/code/cognito
+                        redirect-uri: ${BACKEND_URL:http://localhost:8080}/login/oauth2/code/cognito
                 provider:
                     cognito:
                         issuer-uri: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_5mMPC9Fsc
