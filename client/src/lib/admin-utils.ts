@@ -64,10 +64,19 @@ export const formatAddonName = (addon: string) => {
 
 export const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 
-export const fetcher = (url: string) =>
-    fetch(url).then(res => {
+export const fetcher = (url: string) => {
+    const headers: HeadersInit = {};
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+
+    return fetch(url, { credentials: 'include', headers }).then(res => {
         if (!res.ok) {
             throw new Error('Failed to fetch data');
         }
         return res.json();
     });
+};
