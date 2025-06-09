@@ -73,10 +73,6 @@ public class SecurityConfig {
                         String token = generateJwtToken(user);
                         System.out.println("Generated JWT token: " + token);
                         
-                        String frontendUrl = request.getServletContext().getInitParameter("frontendUrl");
-                        if (frontendUrl == null) {
-                            frontendUrl = "http://localhost:3000";
-                        }
                         String redirectUrl = frontendUrl + "/admin?token=" + token;
                         System.out.println("Redirecting to: " + redirectUrl);
                         response.sendRedirect(redirectUrl);
@@ -84,7 +80,7 @@ public class SecurityConfig {
                         System.err.println("Error during token generation or redirect: " + e.getMessage());
                         e.printStackTrace();
                         try {
-                            response.sendRedirect("http://localhost:3000/admin?error=token_generation_failed");
+                            response.sendRedirect(frontendUrl + "/admin?error=token_generation_failed");
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }

@@ -87,7 +87,9 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
     const handleLogin = async () => {
         try {
-            const backendUrl = process.env.BACKEND_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://earnedshine.com');
+            const backendUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+                ? 'http://localhost:8080' 
+                : 'https://api.earnedshine.com';
             window.location.href = `${backendUrl}/oauth2/authorization/cognito`;
         } catch (err) {
             console.error('Error initiating login:', err);
