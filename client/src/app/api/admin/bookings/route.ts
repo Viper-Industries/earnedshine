@@ -1,4 +1,4 @@
-import { proxyApi } from '@/lib/proxyApi';
+import { proxyApi } from '@/lib/proxy-api';
 
 export async function GET(request: Request) {
     const url = new URL(request.url);

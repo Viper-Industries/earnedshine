@@ -1,5 +1,5 @@
 
-import { proxyApi } from '@/lib/proxyApi';
+import { proxyApi } from '@/lib/proxy-api';
 
 export async function GET(req: Request, { params }: { params: Promise<{ date: string }> }) {
     const { date } = await params;
