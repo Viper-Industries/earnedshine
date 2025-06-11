@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@PreAuthorize("hasAuthority('SCOPE_openid') or hasRole('USER')")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -26,7 +28,9 @@ public class AuthController {
     private String frontendUrl;
 
     @GetMapping("/login-url")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> getLoginUrl() {
+        logger.info("Authenticated user requesting login URL");
         String loginUrl = "/oauth2/authorization/cognito";
         
         Map<String, String> response = Map.of(
@@ -38,7 +42,9 @@ public class AuthController {
     }
 
     @GetMapping("/logout-url")
-    public ResponseEntity<Map<String, String>> getLogoutUrl() {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> getLogoutUrl(@AuthenticationPrincipal OAuth2User user) {
+        logger.info("Authenticated user {} requesting logout URL", user != null ? user.getAttribute("username") : "unknown");
         
         if (cognitoDomain == null || cognitoDomain.trim().isEmpty()) {
             String localLogoutUrl = frontendUrl + "/admin/logout/callback";
@@ -60,7 +66,10 @@ public class AuthController {
     }
 
     @GetMapping("/status")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getAuthStatus(@AuthenticationPrincipal OAuth2User user) {
+        logger.info("Authenticated user {} requesting auth status", user != null ? user.getAttribute("username") : "unknown");
+        
         if (user != null) {
             Map<String, Object> response = Map.of(
                 "authenticated", true,

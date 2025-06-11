@@ -56,6 +56,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
                 .requestMatchers("/api/admin/**").authenticated()
+                .requestMatchers("/api/auth/**").authenticated()
+                .requestMatchers("/api/gmail-auth/**").authenticated()
                 .requestMatchers("/api/availability/block-slot", "/api/availability/unblock-slot", 
                                "/api/availability/block-day", "/api/availability/unblock-day",
                                "/api/availability/cancel-booking").authenticated()

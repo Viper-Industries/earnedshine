@@ -10,12 +10,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/gmail-auth")
+@PreAuthorize("hasAuthority('SCOPE_openid') or hasRole('USER')")
 public class GmailAuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(GmailAuthController.class);
@@ -33,20 +37,24 @@ public class GmailAuthController {
     private String redirectUri;
 
     @GetMapping("/auth-url")
-    public ResponseEntity<?> getAuthUrl() {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getAuthUrl(@AuthenticationPrincipal OAuth2User user) {
+        logger.info("Authenticated user {} requesting Gmail authorization URL", user != null ? user.getAttribute("username") : "unknown");
         try {
             String authUrl = gmailService.getAuthorizationUrl();
-            logger.info("Generated Gmail authorization URL");
+            logger.info("Generated Gmail authorization URL for user: {}", user != null ? user.getAttribute("username") : "unknown");
             return ResponseEntity.ok(Map.of("authUrl", authUrl));
         } catch (Exception e) {
-            logger.error("Error generating authorization URL", e);
+            logger.error("Error generating authorization URL for user: {}", user != null ? user.getAttribute("username") : "unknown", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Failed to generate authorization URL: " + e.getMessage()));
         }
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<?> handleCallback(@RequestParam String code) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> handleCallback(@RequestParam String code, @AuthenticationPrincipal OAuth2User user) {
+        logger.info("Authenticated user {} handling Gmail OAuth callback", user != null ? user.getAttribute("username") : "unknown");
         try {
             
             TokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
@@ -62,28 +70,30 @@ public class GmailAuthController {
             String accessToken = tokenResponse.getAccessToken();
             
             if (refreshToken != null) {
-                logger.info("Successfully obtained refresh token");
+                logger.info("Successfully obtained refresh token for user: {}", user != null ? user.getAttribute("username") : "unknown");
                 return ResponseEntity.ok(Map.of(
                     "message", "Authorization successful! Please save the refresh token as GMAIL_REFRESH_TOKEN environment variable.",
                     "refreshToken", refreshToken,
                     "accessToken", accessToken
                 ));
             } else {
-                logger.warn("No refresh token received - user may have already authorized this app");
+                logger.warn("No refresh token received for user: {} - user may have already authorized this app", user != null ? user.getAttribute("username") : "unknown");
                 return ResponseEntity.ok(Map.of(
                     "message", "No refresh token received. This usually means the app was already authorized. If you need a new refresh token, revoke access and try again.",
                     "accessToken", accessToken
                 ));
             }
         } catch (Exception e) {
-            logger.error("Error handling OAuth callback", e);
+            logger.error("Error handling OAuth callback for user: {}", user != null ? user.getAttribute("username") : "unknown", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Failed to process authorization: " + e.getMessage()));
         }
     }
 
     @PostMapping("/test-email")
-    public ResponseEntity<?> testEmail(@RequestParam String toEmail) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> testEmail(@RequestParam String toEmail, @AuthenticationPrincipal OAuth2User user) {
+        logger.info("Authenticated user {} requesting test email to: {}", user != null ? user.getAttribute("username") : "unknown", toEmail);
         try {
             
             com.detailing.model.Booking testBooking = new com.detailing.model.Booking();
@@ -100,10 +110,10 @@ public class GmailAuthController {
             
             gmailService.sendBookingConfirmation(testBooking);
             
-            logger.info("Test email sent successfully to: {}", toEmail);
+            logger.info("Test email sent successfully to: {} by user: {}", toEmail, user != null ? user.getAttribute("username") : "unknown");
             return ResponseEntity.ok(Map.of("message", "Test email sent successfully!"));
         } catch (Exception e) {
-            logger.error("Error sending test email", e);
+            logger.error("Error sending test email to: {} for user: {}", toEmail, user != null ? user.getAttribute("username") : "unknown", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Failed to send test email: " + e.getMessage()));
         }
